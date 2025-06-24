@@ -13,6 +13,7 @@ import ConsumoEnergetico from '../views/ConsumoEnergetico.vue'
 import Fleet from '../views/Fleet.vue'
 import MeterDetail from '../views/MeterDetail.vue'
 import { useAuthStore } from '@/stores/authStore'
+import NewMapView from '@/components/Map/NewMapView.vue'
 
 const routes = [
   { path: '/', redirect: '/inicio' },
@@ -29,10 +30,15 @@ const routes = [
   { path: '/historicos/patrones', name: 'patrones', component: Patrones, meta: { requiresAuth: true } },
   { path: '/fleet', name: 'fleet', component: Fleet, meta: { requiresAuth: true } },
   { path: '/meter/:id', name: 'MeterDetail', component: MeterDetail, props: true, meta: { requiresAuth: true } },
-  { path: '/map', name: 'map', component: () => import('@/components/MapaLeaflet.vue'), meta: { requiresAuth: true } },
+  //{ path: '/map', name: 'map', component: () => import('@/components/MapaLeaflet.vue'), meta: { requiresAuth: true } },
   { path: '/medidor/:id', name: 'MeterDetailDynamic', component: () => import('@/views/MeterDetail.vue'), meta: { requiresAuth: true } },
   { path: '/medidor/:id/unifilar', name: 'Unifilar', component: () => import('@/views/Unifilar.vue'), meta: { requiresAuth: true, onlyMasterAdmin: true } },
-  { path: '/403', name: 'AccessDenied', component: () => import('@/views/AccessDenied.vue') }
+  { path: '/403', name: 'AccessDenied', component: () => import('@/views/AccessDenied.vue') },
+    {
+    path: '/map',
+    name: 'NewMapView',
+    component: NewMapView
+  }
 ]
 
 const router = createRouter({

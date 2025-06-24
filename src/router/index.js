@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import Inicio from '../views/Inicio.vue'
 import TiempoReal from '../views/TiempoReal.vue'
@@ -17,7 +16,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 const routes = [
   { path: '/', redirect: '/inicio' },
-  { path: '/inicio', name: 'inicio', component: () => import('@/views/Inicio.vue') },  // CORREGIDO: Se agregó la coma aquí
+  { path: '/inicio', name: 'inicio', component: Inicio },
   { path: '/tiempo-real', name: 'tiempo-real', component: TiempoReal, meta: { requiresAuth: true } },
   { path: '/dashboard', name: 'dashboard', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/reportes', name: 'reportes', component: Reportes, meta: { requiresAuth: true } },
@@ -30,8 +29,10 @@ const routes = [
   { path: '/historicos/patrones', name: 'patrones', component: Patrones, meta: { requiresAuth: true } },
   { path: '/fleet', name: 'fleet', component: Fleet, meta: { requiresAuth: true } },
   { path: '/meter/:id', name: 'MeterDetail', component: MeterDetail, props: true, meta: { requiresAuth: true } },
-  { path: '/map', name: 'map', component: () => import('@/components/MapaLeaflet.vue'), meta: { requiresAuth: true } }
-
+  { path: '/map', name: 'map', component: () => import('@/components/MapaLeaflet.vue'), meta: { requiresAuth: true } },
+  { path: '/medidor/:id', name: 'MeterDetailDynamic', component: () => import('@/views/MeterDetail.vue'), meta: { requiresAuth: true } },
+  { path: '/medidor/:id/unifilar', name: 'Unifilar', component: () => import('@/views/Unifilar.vue'), meta: { requiresAuth: true, onlyMasterAdmin: true } },
+  { path: '/403', name: 'AccessDenied', component: () => import('@/views/AccessDenied.vue') }
 ]
 
 const router = createRouter({
@@ -40,12 +41,14 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
+  const authStore = useAuthStore()
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: 'inicio' });
-    return;
+    return next({ name: 'inicio' })
   }
-  next();
-});
+  if (to.meta.onlyMasterAdmin && authStore.user?.role !== 'admin_master') {
+    return next({ name: 'AccessDenied' })
+  }
+  next()
+})
 
-export default router;
+export default router

@@ -12,6 +12,17 @@
     <!-- Modal para agregar medidor -->
     <AddMeterModal v-model:visible="isModalVisible" @meter-added="onMeterAdded" />
   </div>
+  <NoDataCard
+  v-if="noData"
+  message="No hay consumo registrado para este medidor aún."
+/>
+
+<ApexChart
+  v-else
+  :options="chartOptions"
+  :series="chartSeries"
+/>
+
 </template>
 
 <script setup>
@@ -20,6 +31,8 @@ import FleetSidebar from '@/components/Fleet/FleetSidebar.vue'
 import MapView from '@/components/Map/MapView.vue'
 import AddMeterModal from '@/components/Fleet/AddMeterModal.vue'
 import { useRole } from '@/composables/useRole'
+import NoDataCard from '@/components/shared/NoDataCard.vue'
+
 
 
 // Obtención del rol y usuario desde backend

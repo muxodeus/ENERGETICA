@@ -5,6 +5,7 @@ import App from './App.vue';
 import router from './router';
 import VueApexCharts from 'vue3-apexcharts'
 import '@/assets/styles/main.css'
+import 'leaflet/dist/leaflet.css'
 
 
 const app = createApp(App)

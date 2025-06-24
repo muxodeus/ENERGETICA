@@ -20,7 +20,6 @@ import FleetSidebar from '@/components/Fleet/FleetSidebar.vue'
 import MapView from '@/components/Map/MapView.vue'
 import AddMeterModal from '@/components/Fleet/AddMeterModal.vue'
 import { useRole } from '@/composables/useRole'
-{ path: '/fleet', name: 'fleet', component: () => import('@/components/MapaLeaflet.vue'), meta: { requiresAuth: true } }
 
 
 // Obtención del rol y usuario desde backend

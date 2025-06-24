@@ -30,7 +30,7 @@ const routes = [
   { path: '/historicos/patrones', name: 'patrones', component: Patrones, meta: { requiresAuth: true } },
   { path: '/fleet', name: 'fleet', component: Fleet, meta: { requiresAuth: true } },
   { path: '/meter/:id', name: 'MeterDetail', component: MeterDetail, props: true, meta: { requiresAuth: true } },
-  { path: '/map', name: 'map', component: () => import('@/components/MapView.vue'), meta: { requiresAuth: true } }
+  { path: '/map', name: 'map', component: () => import('@/components/MapaLeaflet.vue'), meta: { requiresAuth: true } }
 
 ]
 

@@ -1,12 +1,12 @@
 <template>
-  <div class="map-container" ref="mapContainer" />
+  <div class="map-container" ref="mapContainer"></div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import mapboxgl from 'mapbox-gl'
-// Import the Mapbox GL CSS so the map and markers are styled correctly
-import 'mapbox-gl/dist/mapbox-gl.css'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import ApexCharts from 'apexcharts'
 
 const props = defineProps({
   meters: {
@@ -21,40 +21,105 @@ const props = defineProps({
 
 const mapContainer = ref(null)
 let map = null
+const charts = {} // Para guardar las instancias de ApexCharts
+
+// Función para inicializar el mini gráfico para un medidor en su popup.
+function initMiniChart(meter) {
+  const chartEl = document.getElementById(`chart-${meter.id}`)
+  if (!chartEl) {
+    console.error(`Contenedor del gráfico no encontrado para el medidor ${meter.id}`)
+    return
+  }
+  
+  // Define las opciones para ApexCharts, asegurándote de incluir la propiedad "chart"
+  const options = {
+    chart: {
+      type: 'line',
+      height: 50,
+      sparkline: { enabled: true }
+    },
+    stroke: { curve: 'smooth' },
+    series: [{
+      data: Array.isArray(meter.historyData) && meter.historyData.length 
+              ? meter.historyData 
+              : [10, 15, 12, 18, 16]  // Datos de respaldo
+    }],
+    tooltip: { enabled: false },
+    grid: { show: false },
+    colors: ['#00E396']
+  }
+  
+  console.log(`Opciones de ApexCharts para el medidor ${meter.id}:`, options)
+  
+  // Destruye una instancia previa si existe
+  if (charts[meter.id]) {
+    charts[meter.id].destroy()
+  }
+  
+  try {
+    charts[meter.id] = new ApexCharts(chartEl, options)
+    charts[meter.id].render()
+  } catch (error) {
+    console.error(`Error al renderizar ApexCharts para el medidor ${meter.id}:`, error)
+  }
+}
+
+// Función simulada para actualizar los datos (historyData) del medidor cada 5 segundos.
+function updateMeterData(meter) {
+  if (!meter.historyData) {
+    meter.historyData = [10, 15, 12, 18, 16]
+  }
+  // Simula la generación de un nuevo valor aleatorio
+  const newVal = Math.round(Math.random() * 100)
+  meter.historyData.push(newVal)
+  // Limita el historial a 10 datos
+  if (meter.historyData.length > 10) {
+    meter.historyData.shift()
+  }
+  // Actualiza el gráfico si ya está creado
+  if (charts[meter.id]) {
+    charts[meter.id].updateSeries([{ data: meter.historyData }])
+  }
+}
 
 onMounted(() => {
-  // Set your Mapbox access token
-  mapboxgl.accessToken =
-    'pk.eyJ1IjoibXV4b2RldXMiLCJhIjoiY2lsanBmZGxhNTN5a3ZybTByYjA1YWhqZSJ9.kspPh-wlVRf49UlMVbrDtA'
-
-  // Initialize the map
-  map = new mapboxgl.Map({
-    container: mapContainer.value,
-    style: 'mapbox://styles/mapbox/streets-v11',
-    center: [-89.19, 13.71], // Longitude, Latitude (centered around El Salvador)
-    zoom: 7
-  })
-
-  // Add navigation controls (zoom and rotation)
-  map.addControl(new mapboxgl.NavigationControl())
-
-  // Wait for the map to load before adding markers
-  map.on('load', () => {
-    props.meters.forEach((meter) => {
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-        <strong>${meter.name}</strong><br/>
-        Estado: ${meter.status}<br/>
-        ${props.role === 'admin' ? '<button>Editar</button>' : ''}
-      `)
-
-      // Ensure lng and lat are in the correct order: [lng, lat]
-      new mapboxgl.Marker({
-        color: meter.status === 'activo' ? '#3bb2d0' : '#d9534f'
+  // Inicializa el mapa centrado en El Salvador.
+  map = L.map(mapContainer.value).setView([13.71, -89.19], 7)
+  
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map)
+  
+  // Para cada medidor, crear un marcador y vincular un popup que incluya el contenedor para el mini gráfico.
+  props.meters.forEach((meter) => {
+    // Prepara el contenido del popup: nombre, estado, botón de edición (para admin/admin_master)
+    // Y un DIV para el mini gráfico, identificado de forma única.
+    const popupContent = `
+      <strong>${meter.name}</strong><br/>
+      Estado: ${meter.status}<br/>
+      ${props.role === 'visualizador' || props.role === 'admin_master' ? '<button>Editar</button>' : ''}
+      <div id="chart-${meter.id}" style="width:100%; height:50px; margin-top:5px;"></div>
+    `
+    
+    // Crea un marcador (circleMarker) para el medidor.
+    const marker = L.circleMarker([meter.lat, meter.lng], {
+      color: meter.status === 'activo' ? '#3bb2d0' : '#d9534f'
+    }).addTo(map)
+    
+    marker.bindPopup(popupContent)
+    
+    // Cuando el popup se abre, inicializa (o re-inicializa) el mini gráfico.
+    marker.on('popupopen', () => {
+      nextTick(() => {
+        initMiniChart(meter)
       })
-        .setLngLat([meter.lng, meter.lat])
-        .setPopup(popup)
-        .addTo(map)
     })
+    
+    // Inicia una simulación para actualizar el gráfico cada 5 segundos.
+    setInterval(() => {
+      updateMeterData(meter)
+    }, 5000)
   })
 })
 
@@ -66,7 +131,6 @@ onUnmounted(() => {
 <style scoped>
 .map-container {
   width: 100%;
-  /* Ensure your container has a defined height – adjust as needed */
   height: calc(100vh - 60px);
 }
 </style>

@@ -86,14 +86,6 @@ onMounted(() => {
   setInterval(fetchLiveData, 5000)
 })
 
-function fetchLiveData() {
-  // Simulado; luego reemplazás con llamada real
-  const v = Math.random() > 0.2 ? 220 : 0
-  voltaje.value = v
-  corriente.value = v > 0 ? (Math.random() * 10).toFixed(2) : 0
-  isEnergized.value = v > 0
-  timestamp.value = new Date().toLocaleTimeString()
-}
 </script>
 
 <style scoped>

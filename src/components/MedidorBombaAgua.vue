@@ -59,7 +59,7 @@ export default {
 
   data() {
     const intervalSec = 3
-    const windowSize  = Math.ceil(10 * 60 / intervalSec) // → 200 puntos
+    const windowSize  = Math.ceil(5 * 60 / intervalSec) // → 200 puntos
 
     return {
       // Ventana de datos

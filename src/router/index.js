@@ -14,6 +14,7 @@ import Fleet from '../views/Fleet.vue'
 import MeterDetail from '../views/MeterDetail.vue'
 import { useAuthStore } from '@/stores/authStore'
 import NewMapView from '@/components/Map/NewMapView.vue'
+import MedidorBombaAgua from '@/components/MedidorBombaAgua.vue'
 
 const routes = [
   { path: '/', redirect: '/inicio' },
@@ -38,6 +39,11 @@ const routes = [
     path: '/map',
     name: 'NewMapView',
     component: NewMapView
+  },
+    {
+    path: '/bomba-agua',
+    name: 'MedidorBombaAgua',
+    component: MedidorBombaAgua
   }
 ]
 

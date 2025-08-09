@@ -16,6 +16,8 @@ import MeterDetail from '../views/MeterDetail.vue'
 import { useAuthStore } from '@/stores/authStore'
 import NewMapView from '@/components/Map/NewMapView.vue'
 import MedidorBombaAgua from '@/components/MedidorBombaAgua.vue'
+import ConfigMedidor from '../views/ConfigMedidor.vue' // ajusta la ruta si está en otra carpeta
+
 
 
 const routes = [
@@ -50,11 +52,14 @@ const routes = [
  
 ]
 
-
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes: [
+    { path: '/', name: 'home', component: Home },
+    { path: '/config', name: 'config-medidor', component: ConfigMedidor }
+  ]
 })
+
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()

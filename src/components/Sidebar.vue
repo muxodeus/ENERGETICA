@@ -53,6 +53,13 @@
               <span class="menu-title" v-show="!isCollapsed">Configuración</span>
             </router-link>
           </li>
+          <li>
+  <router-link to="/config" class="menu-item">
+    <i class="mdi mdi-cog"></i>
+    <span class="menu-title" v-show="!isCollapsed">Configurar Medidores</span>
+  </router-link>
+</li>
+
         </template>
       </ul>
     </nav>

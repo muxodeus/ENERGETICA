@@ -1,7 +1,7 @@
 # Copyright (c) 2014 Roger Light <roger@atchoo.org>
 #
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Eclipse Public License v2.0
+# are made available under the terms of the Eclipse Public License v1.0
 # and Eclipse Distribution License v1.0 which accompany this distribution.
 #
 # The Eclipse Public License is available at
@@ -21,15 +21,13 @@ broker, then disconnect and nothing else is required.
 from __future__ import absolute_import
 
 import collections
-
 try:
     from collections.abc import Iterable
 except ImportError:
     from collections import Iterable
 
-from .. import mqtt
 from . import client as paho
-
+from .. import mqtt
 
 def _do_publish(client):
     """Internal function"""
@@ -54,9 +52,6 @@ def _on_connect(client, userdata, flags, rc):
     else:
         raise mqtt.MQTTException(paho.connack_string(rc))
 
-def _on_connect_v5(client, userdata, flags, rc, properties):
-    """Internal v5 callback"""
-    _on_connect(client, userdata, flags, rc)
 
 def _on_publish(client, userdata, mid):
     """Internal callback"""
@@ -136,15 +131,11 @@ def multiple(msgs, hostname="localhost", port=1883, client_id="", keepalive=60,
     if not isinstance(msgs, Iterable):
         raise TypeError('msgs must be an iterable')
 
-
     client = paho.Client(client_id=client_id, userdata=collections.deque(msgs),
                          protocol=protocol, transport=transport)
 
     client.on_publish = _on_publish
-    if protocol == mqtt.client.MQTTv5:
-        client.on_connect = _on_connect_v5
-    else:
-        client.on_connect = _on_connect
+    client.on_connect = _on_connect
 
     if proxy_args is not None:
         client.proxy_set(**proxy_args)

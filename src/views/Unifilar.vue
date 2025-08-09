@@ -45,8 +45,8 @@
 
 
     <div class="realtime-data">
-      <p><b>Voltaje:</b> {{ voltaje ?? '—' }} V</p>
-      <p><b>Corriente:</b> {{ corriente ?? '—' }} A</p>
+      <p><b>Voltaje:</b> + {{ voltaje != null ? voltaje : '—' }} V</p>
+      <p><b>Corriente:</b> {{ corriente != null ? corriente : '—' }} A</p>
       <p><b>Última lectura:</b> {{ timestamp ?? '—' }}</p>
     </div>
   </div>
@@ -68,6 +68,12 @@ function fetchLiveData() {
   corriente.value = corrienteRaw
   isEnergized.value = v > 0
   timestamp.value = new Date().toLocaleTimeString()
+  console.log('fetchLiveData →', {
+  voltaje: voltaje.value,
+  corriente: corriente.value,
+  isEnergized: isEnergized.value
+})
+
 
   // Condiciones de color:
   cargaA_color.value = corrienteRaw > 10 ? '#f44336' : '#4caf50'
@@ -84,6 +90,7 @@ const isEnergized = ref(false)
 onMounted(() => {
   fetchLiveData()
   setInterval(fetchLiveData, 5000)
+  
 })
 
 </script>

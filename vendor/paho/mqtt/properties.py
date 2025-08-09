@@ -3,7 +3,7 @@
   Copyright (c) 2017, 2019 IBM Corp.
 
   All rights reserved. This program and the accompanying materials
-  are made available under the terms of the Eclipse Public License v2.0
+  are made available under the terms of the Eclipse Public License v1.0
   and Eclipse Distribution License v1.0 which accompany this distribution.
 
   The Eclipse Public License is available at
@@ -16,8 +16,7 @@
 *******************************************************************
 """
 
-import struct
-import sys
+import sys, struct
 
 from .packettypes import PacketTypes
 
@@ -269,30 +268,6 @@ class Properties(object):
             if self.packetType not in self.properties[self.getIdentFromName(name)][1]:
                 raise MQTTException("Property %s does not apply to packet type %s"
                                     % (name, PacketTypes.Names[self.packetType]))
-
-            # Check for forbidden values
-            if type(value) != type([]):
-                if name in ["ReceiveMaximum", "TopicAlias"] \
-                        and (value < 1 or value > 65535):
-
-                    raise MQTTException(
-                        "%s property value must be in the range 1-65535" % (name))
-                elif name in ["TopicAliasMaximum"] \
-                        and (value < 0 or value > 65535):
-
-                    raise MQTTException(
-                        "%s property value must be in the range 0-65535" % (name))
-                elif name in ["MaximumPacketSize", "SubscriptionIdentifier"] \
-                        and (value < 1 or value > 268435455):
-
-                    raise MQTTException(
-                        "%s property value must be in the range 1-268435455" % (name))
-                elif name in ["RequestResponseInformation", "RequestProblemInformation", "PayloadFormatIndicator"] \
-                        and (value != 0 and value != 1):
-
-                    raise MQTTException(
-                        "%s property value must be 0 or 1" % (name))
-
             if self.allowsMultiple(name):
                 if type(value) != type([]):
                     value = [value]
@@ -319,11 +294,7 @@ class Properties(object):
         for name in self.names.keys():
             compressedName = name.replace(' ', '')
             if hasattr(self, compressedName):
-                val = getattr(self, compressedName)
-                if compressedName == 'CorrelationData' and isinstance(val, bytes):
-                    data[compressedName] = val.hex()
-                else:
-                    data[compressedName] = val
+                data[compressedName] = getattr(self, compressedName)
         return data
 
     def isEmpty(self):
@@ -420,10 +391,10 @@ class Properties(object):
         buffer = buffer[VBIlen:]  # strip the bytes used by the VBI
         propslenleft = propslen
         while propslenleft > 0:  # properties length is 0 if there are none
-            identifier, VBIlen2 = VariableByteIntegers.decode(
+            identifier, VBIlen = VariableByteIntegers.decode(
                 buffer)  # property identifier
-            buffer = buffer[VBIlen2:]  # strip the bytes used by the VBI
-            propslenleft -= VBIlen2
+            buffer = buffer[VBIlen:]  # strip the bytes used by the VBI
+            propslenleft -= VBIlen
             attr_type = self.properties[identifier][0]
             value, valuelen = self.readProperty(
                 buffer, attr_type, propslenleft)

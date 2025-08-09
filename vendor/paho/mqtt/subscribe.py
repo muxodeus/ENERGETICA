@@ -1,7 +1,7 @@
 # Copyright (c) 2016 Roger Light <roger@atchoo.org>
 #
 # All rights reserved. This program and the accompanying materials
-# are made available under the terms of the Eclipse Public License v2.0
+# are made available under the terms of the Eclipse Public License v1.0
 # and Eclipse Distribution License v1.0 which accompany this distribution.
 #
 # The Eclipse Public License is available at
@@ -20,11 +20,10 @@ you to pass a callback for processing of messages.
 """
 from __future__ import absolute_import
 
-from .. import mqtt
 from . import client as paho
+from .. import mqtt
 
-
-def _on_connect_v5(client, userdata, flags, rc, properties):
+def _on_connect(client, userdata, flags, rc):
     """Internal callback"""
     if rc != 0:
         raise mqtt.MQTTException(paho.connack_string(rc))
@@ -34,10 +33,6 @@ def _on_connect_v5(client, userdata, flags, rc, properties):
             client.subscribe(topic, userdata['qos'])
     else:
         client.subscribe(userdata['topics'], userdata['qos'])
-
-def _on_connect(client, userdata, flags, rc):
-    """Internal v5 callback"""
-    _on_connect_v5(client, userdata, flags, rc, None)
 
 
 def _on_message_callback(client, userdata, message):
@@ -147,10 +142,7 @@ def callback(callback, topics, qos=0, userdata=None, hostname="localhost",
                          protocol=protocol, transport=transport,
                          clean_session=clean_session)
     client.on_message = _on_message_callback
-    if protocol == mqtt.client.MQTTv5:
-        client.on_connect = _on_connect_v5
-    else:
-        client.on_connect = _on_connect
+    client.on_connect = _on_connect
 
     if proxy_args is not None:
         client.proxy_set(**proxy_args)

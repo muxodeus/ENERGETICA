@@ -1,57 +1,42 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import sys
-sys.path.insert(0, "/root/vendor")
-
 import time
 import json
 import ssl
 import logging
-
-from pymodbus.client.sync   import ModbusTcpClient
+from pymodbus.client.sync import ModbusTcpClient
 from pymodbus.payload       import BinaryPayloadDecoder
 from pymodbus.constants     import Endian
 import paho.mqtt.client as mqtt
 
 # ─── Logging ────────────────────────────────────────────────────────────────
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
-    level=logging.DEBUG
-)
+logging.basicConfig(format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
+                    level=logging.DEBUG)
 log = logging.getLogger("modbus_mqtt_gateway")
-
-# ─── Configuración Modbus ───────────────────────────────────────────────────
-MODBUS_HOST    = "192.168.1.205"
-MODBUS_PORT    = 502
-MODBUS_UNIT_ID = 1
 
 # ─── Configuración MQTT ─────────────────────────────────────────────────────
 MQTT_BROKER = "d84e0de763a04f6b832b86427fdd9d3d.s2.eu.hivemq.cloud"
 MQTT_PORT   = 8883
-MQTT_TOPIC  = "energia/BOMBA_AGUA"
 MQTT_USER   = "joserecinos"
 MQTT_PASS   = "Recinos5"
+MQTT_TOPIC  = "energia/BOMBA_AGUA"
 
-# ─── Callbacks MQTT ─────────────────────────────────────────────────────────
-def on_connect(client, userdata, flags, rc):
-    log.info("MQTT conectado rc=%s", rc)
-    client.subscribe(MQTT_TOPIC, qos=1)
-
-def on_publish(client, userdata, mid):
-    log.debug("Publicación confirmada mid=%s", mid)
-
-def on_disconnect(client, userdata, rc):
-    log.warning("MQTT desconectado rc=%s", rc)
-
-# ─── Cliente MQTT ───────────────────────────────────────────────────────────
-mqtt_client = mqtt.Client()
+# ─── Inicialización de cliente MQTT ────────────────────────────────────────
+mqtt_client = mqtt.Client(
+    client_id="bomba_gateway",  # Identificador único
+    clean_session=False         # Persistir sesión tras desconexiones
+)
 mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
 mqtt_client.tls_set(cert_reqs=ssl.CERT_REQUIRED)
-mqtt_client.on_connect    = on_connect
-mqtt_client.on_publish    = on_publish
-mqtt_client.on_disconnect = on_disconnect
 
+# Callbacks para reconexión
+def on_disconnect(client, userdata, rc):
+    log.warning("⚠️ MQTT desconectado (rc=%s), esperando reconnect…", rc)
+
+mqtt_client.on_disconnect = on_disconnect
+mqtt_client.reconnect_delay_set(min_delay=1, max_delay=120)
+
+# Conexión y loop
 try:
     mqtt_client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
     mqtt_client.loop_start()

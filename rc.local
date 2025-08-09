@@ -1,0 +1,9 @@
+cat << 'EOF' > rc.local
+#!/bin/sh
+export PATH=/sbin:/usr/sbin:/bin:/usr/bin
+sleep 10
+export PYTHONPATH=/root/vendor
+echo "[\`date\`] ▶ Iniciando multi_gateway" >> /root/gateway.log
+python3 /root/multi_gateway.py >> /root/gateway.log 2>&1 &
+exit 0
+EOF

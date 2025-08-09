@@ -1,0 +1,18 @@
+cat << 'EOF' > multi_gateway
+#!/bin/sh /etc/rc.common
+START=99
+STOP=10
+
+start() {
+  export PYTHONPATH=/root/vendor
+  echo "[\$(date)] ▶ Iniciando multi_gateway" >> /root/gateway.log
+  python3 /root/multi_gateway.py >> /root/gateway.log 2>&1 &
+}
+
+stop() {
+  echo "[\$(date)] ⏹ Deteniendo multi_gateway" >> /root/gateway.log
+  killall python3
+}
+EOF
+
+chmod +x multi_gateway

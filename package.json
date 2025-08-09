@@ -1,11 +1,14 @@
 {
   "name": "analitica-energetica",
   "version": "1.0.0",
+  "private": true,
+  "description": "Proyecto Analítica Energética con Vue, Vite, Netlify Functions y MQTT",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "preview": "vite preview",
     "start": "node server.js",
-    "preview": "vite preview"
+    "mqtt-bridge": "node mqtt2netlify.js"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -18,11 +21,11 @@
     "html2pdf.js": "^0.10.3",
     "leaflet": "^1.9.4",
     "mapbox-gl": "^3.13.0",
-    "mqtt": "^5.13.1",
-    "pg": "^8.16.2",
+    "mqtt": "^5.14.0",
+    "pg": "^8.16.3",
     "pinia": "^3.0.3",
     "process": "^0.11.10",
-    "vue": "^3.2.0",
+    "vue": "^3.5.18",
     "vue-router": "^4.2.5",
     "vue-sidebar-menu": "^5.7.0",
     "vue3-apexcharts": "^1.8.0"
@@ -35,3 +38,4 @@
     "node": ">=16.0.0"
   }
 }
+

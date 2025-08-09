@@ -16,7 +16,7 @@ import MeterDetail from '../views/MeterDetail.vue'
 import { useAuthStore } from '@/stores/authStore'
 import NewMapView from '@/components/Map/NewMapView.vue'
 import MedidorBombaAgua from '@/components/MedidorBombaAgua.vue'
-import ConfigMedidor from '../views/ConfigMedidor.vue' // ajusta la ruta si está en otra carpeta
+import ConfigMedidor from '@/components/ConfigMedidor.vue'
 
 
 

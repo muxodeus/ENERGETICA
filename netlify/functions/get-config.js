@@ -17,20 +17,20 @@ exports.handler = async (event) => {
     tipo: "configuracion",
     gateway_id,
     medidor_id: "EPM-123",
-    ip: "192.168.1.50",
+    ip: "192.168.86.205",
     direccion_modbus: 1,
     intervalo_segundos: 60,
     registros: [
       {
         nombre: "tension_L1",
-        offset: 0,
+        offset: 1010,
         cantidad: 2,
         escala: 0.1,
         tipo: "float"
       },
       {
         nombre: "corriente_L1",
-        offset: 2,
+        offset: 1000,
         cantidad: 2,
         escala: 0.01,
         tipo: "float"

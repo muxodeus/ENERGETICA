@@ -1,34 +1,53 @@
 // netlify/functions/get-config.js
-exports.handler = async function(event, context) {
-  const AUTH_TOKEN = process.env.CONFIG_ACCESS_TOKEN;
+const fs = require('fs');
+const path = require('path');
 
-  const authHeader = event.headers.authorization || "";
-  const token = authHeader.replace("Bearer ", "");
+exports.handler = async function(event) {
+  try {
+    const tokensEnv = process.env.CONFIG_TOKENS || '{}';
+    const tokens = JSON.parse(tokensEnv); // {"RB751-CASA":"TOKEN_RB751_CASA", ...}
 
-  if (token !== AUTH_TOKEN) {
+    const authHeader = event.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
+
+    const gateway_id = event.queryStringParameters?.gateway || '';
+
+    if (!gateway_id) {
+      return json(400, { error: 'Missing gateway param' });
+    }
+
+    const expected = tokens[gateway_id];
+    if (!expected || token !== expected) {
+      return json(401, { error: 'Unauthorized' });
+    }
+
+    const file = path.join(__dirname, 'configs', `${gateway_id}.json`);
+    if (!fs.existsSync(file)) {
+      return json(404, { error: 'Config not found for gateway', gateway_id });
+    }
+
+    const raw = fs.readFileSync(file, 'utf8');
+    // Validación mínima JSON
+    JSON.parse(raw);
+
     return {
-      statusCode: 401,
-      body: JSON.stringify({ error: "Unauthorized" }),
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: raw
     };
+  } catch (err) {
+    return json(500, { error: String(err) });
   }
-
-  const gateway_id = event.queryStringParameters?.gateway || 'UNKNOWN';
-
-  const config = {
-    tipo: "configuracion",
-    gateway_id,
-    medidor_id: "EPM-123",
-    ip: "192.168.86.205",
-    direccion_modbus: 1,
-    intervalo_segundos: 60,
-    registros: [
-      { nombre: "tension_L1", offset: 1010, cantidad: 2, escala: 0.1, tipo: "float" },
-      { nombre: "corriente_L1", offset: 1000, cantidad: 2, escala: 0.01, tipo: "float" }
-    ]
-  };
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify(config)
-  };
 };
+
+function json(code, obj) {
+  return {
+    statusCode: code,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' },
+    body: JSON.stringify(obj)
+  };
+}

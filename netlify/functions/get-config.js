@@ -1,5 +1,5 @@
-// get-config.js
-export async function handler(event, context) {
+// netlify/functions/get-config.js
+exports.handler = async function(event, context) {
   const AUTH_TOKEN = process.env.CONFIG_ACCESS_TOKEN;
 
   const authHeader = event.headers.authorization || "";
@@ -12,30 +12,23 @@ export async function handler(event, context) {
     };
   }
 
-  // Tu lógica de configuración aquí
+  const gateway_id = event.queryStringParameters?.gateway || 'UNKNOWN';
+
   const config = {
-    mqttBroker: "mqtt://broker.hivemq.com",
-    topic: "iot/gateway/config",
-    retryInterval: 5000,
+    tipo: "configuracion",
+    gateway_id,
+    medidor_id: "EPM-123",
+    ip: "192.168.86.205",
+    direccion_modbus: 1,
+    intervalo_segundos: 60,
+    registros: [
+      { nombre: "tension_L1", offset: 1010, cantidad: 2, escala: 0.1, tipo: "float" },
+      { nombre: "corriente_L1", offset: 1000, cantidad: 2, escala: 0.01, tipo: "float" }
+    ]
   };
 
   return {
     statusCode: 200,
-    body: JSON.stringify(config),
+    body: JSON.stringify(config)
   };
-}
-
-const gateway_id = event.queryStringParameters?.gateway || 'UNKNOWN';
-
-const config = {
-  tipo: "configuracion",
-  gateway_id,
-  medidor_id: "EPM-123",
-  ip: "192.168.86.205",
-  direccion_modbus: 1,
-  intervalo_segundos: 60,
-  registros: [
-    { nombre: "tension_L1", offset: 1010, cantidad: 2, escala: 0.1, tipo: "float" },
-    { nombre: "corriente_L1", offset: 1000, cantidad: 2, escala: 0.01, tipo: "float" }
-  ]
 };

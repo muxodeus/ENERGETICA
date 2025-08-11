@@ -1,47 +1,41 @@
-exports.handler = async (event) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Cache-Control': 'no-store'
+// get-config.js
+export async function handler(event, context) {
+  const AUTH_TOKEN = process.env.CONFIG_ACCESS_TOKEN;
+
+  const authHeader = event.headers.authorization || "";
+  const token = authHeader.replace("Bearer ", "");
+
+  if (token !== AUTH_TOKEN) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ error: "Unauthorized" }),
+    };
   }
 
-  // Preflight CORS
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers }
-  }
-
-  const gateway_id = event.queryStringParameters?.gateway || 'UNKNOWN'
-
-  // Simulación de configuración por gateway_id
+  // Tu lógica de configuración aquí
   const config = {
-    tipo: "configuracion",
-    gateway_id,
-    medidor_id: "EPM-123",
-    ip: "192.168.86.205",
-    direccion_modbus: 1,
-    intervalo_segundos: 60,
-    registros: [
-      {
-        nombre: "tension_L1",
-        offset: 1010,
-        cantidad: 2,
-        escala: 0.1,
-        tipo: "float"
-      },
-      {
-        nombre: "corriente_L1",
-        offset: 1000,
-        cantidad: 2,
-        escala: 0.01,
-        tipo: "float"
-      }
-    ]
-  }
+    mqttBroker: "mqtt://broker.hivemq.com",
+    topic: "iot/gateway/config",
+    retryInterval: 5000,
+  };
 
   return {
     statusCode: 200,
-    headers,
-    body: JSON.stringify(config)
-  }
+    body: JSON.stringify(config),
+  };
 }
 
+const gateway_id = event.queryStringParameters?.gateway || 'UNKNOWN';
+
+const config = {
+  tipo: "configuracion",
+  gateway_id,
+  medidor_id: "EPM-123",
+  ip: "192.168.86.205",
+  direccion_modbus: 1,
+  intervalo_segundos: 60,
+  registros: [
+    { nombre: "tension_L1", offset: 1010, cantidad: 2, escala: 0.1, tipo: "float" },
+    { nombre: "corriente_L1", offset: 1000, cantidad: 2, escala: 0.01, tipo: "float" }
+  ]
+};

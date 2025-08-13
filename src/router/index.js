@@ -55,7 +55,7 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', name: 'home', component: Home },
+    { path: '/', name: 'inicio', component: Inicio },
     { path: '/config', name: 'config-medidor', component: ConfigMedidor }
   ]
 })

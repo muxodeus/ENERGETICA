@@ -3,6 +3,9 @@
   node_bundler = "esbuild"
   external_node_modules = ["mqtt"]
 
+[functions."get-config"]
+  included_files = ["netlify/functions/get-config/configs/*.json"]
+  
 # 1) API: redirige /api/* a functions
 [[redirects]]
   from = "/api/*"

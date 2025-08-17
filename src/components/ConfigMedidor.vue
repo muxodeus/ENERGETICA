@@ -48,7 +48,8 @@
 
       <button @click="descargarJSON">💾 Descargar JSON</button>
       <input ref="fileInput" type="file" accept="application/json" class="hidden" @change="cargarDesdeArchivo" />
-      <button @click="() => fileInput?.click()">📥 Importar JSON</button>
+      <button @click="fileInput.value?.click()">📥 Importar JSON</button>
+
     </div>
 
     <h3>📋 Registros a leer</h3>
@@ -98,7 +99,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+defineOptions({ name: 'ConfigMedidor' })
+
 
 // ENV: configurar en tu .env
 // VITE_GATEWAY_ID=RB751-CASA
@@ -189,9 +191,9 @@ function cargarDesdeArchivo(e) {
 }
 
 function validarIP(ip) {
-  // Permite IPv4 simple (no estricta, suficiente para UI)
-  return /^(\d{1,3}\.){3}\d{1,3}$/.test(ip)
+  return /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/.test(ip);
 }
+
 
 function validarConfiguracion() {
   const errs = []
@@ -322,6 +324,12 @@ watch(() => config.value.gateway_id, () => {
   result.value = 'idle'
   message.value = ''
 })
+fetch("${import.meta.env.BASE_URL}/status-RB751-CASA.json")
+  .then(res => res.json())
+  .then(data => {
+    console.log("Último heartbeat:", data.timestamp);
+  });
+
 </script>
 
 <style scoped>

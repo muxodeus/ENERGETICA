@@ -1,0 +1,16 @@
+[Unit]
+Description=IoT Watcher para %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jose
+WorkingDirectory=/home/jose/iot_publisher
+EnvironmentFile=/home/jose/iot_publisher/.env.%i
+ExecStart=/home/jose/iot_publisher/bin/watcher.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

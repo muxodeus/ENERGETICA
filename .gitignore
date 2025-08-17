@@ -1,0 +1,37 @@
+# Node / Vite
+node_modules/
+dist/
+.vite/
+.cache/
+*.log
+
+# Netlify
+.netlify/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Vendorizado/paquetes
+vendor/
+paho_pkg/
+pymodbus_pkg/
+typing_pkg/
+*.tar.gz
+*.tgz
+
+# SO/IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Archivos locales/env
+.env
+.env.*
+!.env.example
+

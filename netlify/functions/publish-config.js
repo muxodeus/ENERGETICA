@@ -28,6 +28,12 @@ function connectMqtt() {
 }
 
 exports.handler = async (event) => {
+ return {
+    statusCode: 200,
+    headers: { 'Access-Control-Allow-Origin': '*' },
+    body: JSON.stringify({ ok: true })
+  }
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' }
   }

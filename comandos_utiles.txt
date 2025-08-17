@@ -1,0 +1,19 @@
+# Local dev frontend
+npm install
+npm run dev
+
+# Local dev full stack (frontend + funcs)
+npx netlify dev
+
+# Vincular por primera vez
+npx netlify login
+npx netlify init
+
+# Deploy manual
+npx netlify deploy --prod
+
+# Deploy automático
+git add .
+git commit -m "Cambios"
+git push
+

@@ -1,76 +1,96 @@
 <template>
   <div class="config-container">
-    <h2>📡 Configurar Medidor</h2>
+    <!-- Toolbar: agregar, limpiar, plantillas, importar/exportar -->
+    <div class="toolbar">
+      <button @click="agregarRegistro">Agregar registro</button>
+      <button @click="limpiarRegistros">Limpiar registros</button>
 
+      <div class="options">
+        <select v-model="tipoMedidor">
+          <option value="">— Plantilla —</option>
+          <option
+            v-for="(arr, key) in plantillas"
+            :key="key"
+            :value="key"
+          >
+            {{ key }}
+          </option>
+        </select>
+        <button @click="aplicarPlantilla">Aplicar</button>
+      </div>
+
+      <div class="actions">
+        <button @click="descargarJSON">Descargar JSON</button>
+        <button @click="fileInput.click()">Cargar JSON</button>
+        <input
+          type="file"
+          ref="fileInput"
+          class="hidden"
+          accept=".json"
+          @change="cargarDesdeArchivo"
+        />
+      </div>
+    </div>
+
+    <!-- Configuración general -->
     <div class="grid">
       <label>
         Gateway ID
-        <input v-model="config.gateway_id" placeholder="RB751-CASA" />
+        <input
+          type="text"
+          v-model="config.gateway_id"
+          placeholder="gateway_id"
+        />
       </label>
-
       <label>
-        ID del medidor
-        <input v-model="config.medidor_id" placeholder="EPM-123" />
+        Medidor ID
+        <input
+          type="text"
+          v-model="config.medidor_id"
+          placeholder="medidor_id"
+        />
       </label>
-
       <label>
         IP del medidor
-        <input v-model="config.ip" placeholder="192.168.1.50" />
+        <input
+          type="text"
+          v-model="config.ip"
+          placeholder="192.168.1.10"
+        />
       </label>
-
       <label>
         Dirección Modbus
-        <input v-model.number="config.direccion_modbus" type="number" min="1" placeholder="1" />
+        <input
+          type="number"
+          v-model.number="config.direccion_modbus"
+          min="1"
+        />
       </label>
-
       <label>
-        Intervalo (seg)
-        <input v-model.number="config.intervalo_segundos" type="number" min="1" placeholder="60" />
+        Intervalo (segundos)
+        <input
+          type="number"
+          v-model.number="config.intervalo_segundos"
+          min="1"
+        />
       </label>
-
       <label>
         Versión
-        <input v-model.number="config.version" type="number" min="1" placeholder="1" />
+        <input
+          type="number"
+          v-model.number="config.version"
+          min="1"
+        />
       </label>
-    </div>
-
-    <div class="toolbar">
-      <select v-model="tipoMedidor">
-        <option disabled value="">Seleccionar plantilla de medidor</option>
-        <option value="EPM">EPM</option>
-        <option value="Schneider">Schneider</option>
-        <option value="Estandar34">Estándar-34 (nombres base)</option>
-      </select>
-      <button @click="aplicarPlantilla" :disabled="!tipoMedidor">Cargar plantilla</button>
-
-      <button @click="agregarRegistro">➕ Agregar registro</button>
-      <button @click="limpiarRegistros" :disabled="!config.registros.length">Limpiar</button>
-
-      <button @click="descargarJSON">💾 Descargar JSON</button>
-      <input ref="fileInput" type="file" accept="application/json" class="hidden" @change="cargarDesdeArchivo" />
-      <button @click="fileInput.value?.click()">📥 Importar JSON</button>
-
-    </div>
-
-    <h3>📋 Registros a leer</h3>
-    <div v-if="!config.registros.length" class="muted">Sin registros. Agregá o cargá una plantilla.</div>
-
-    <div v-for="(reg, index) in config.registros" :key="index" class="registro">
-      <input v-model="reg.nombre" placeholder="Nombre lógico (ej. tension_L1)" />
-      <input v-model.number="reg.offset" type="number" min="0" placeholder="Offset" />
-      <input v-model.number="reg.cantidad" type="number" min="1" placeholder="Cantidad" />
-      <input v-model.number="reg.escala" type="number" step="0.001" placeholder="Escala" />
-      <select v-model="reg.tipo">
-        <option value="int">int</option>
-        <option value="float">float</option>
-      </select>
-      <input v-model="reg.unidad" placeholder="Unidad (opcional)" />
-      <button class="danger" @click="eliminarRegistro(index)">🗑️</button>
-    </div>
-
-    <div class="options">
-      <label><input type="checkbox" v-model="retain" /> Retained</label>
-      <label>QoS
+      <label>
+        Retain
+        <input
+          type="checkbox"
+          v-model="retain"
+        />
+      </label>
+      <label>
+        QoS
         <select v-model.number="qos">
           <option :value="0">0</option>
           <option :value="1">1</option>
@@ -79,42 +99,89 @@
       </label>
     </div>
 
-    <div class="actions">
-      <button :disabled="sending" @click="publicarConfig">
-        <span v-if="!sending && result==='idle'">🚀 Publicar al gateway</span>
-        <span v-if="sending">Enviando…</span>
-        <span v-if="!sending && result==='ok'">✅ Enviado</span>
-        <span v-if="!sending && result==='error'">❌ Error</span>
-      </button>
-      <span class="msg" v-if="message">{{ message }}</span>
+    <!-- Lista dinámica de registros -->
+    <div v-for="(r, i) in config.registros" :key="i" class="registro">
+      <input
+        type="text"
+        v-model="r.nombre"
+        placeholder="nombre"
+      />
+      <input
+        type="number"
+        v-model.number="r.offset"
+        placeholder="offset"
+        min="0"
+      />
+      <input
+        type="number"
+        v-model.number="r.cantidad"
+        placeholder="cantidad"
+        min="1"
+      />
+      <input
+        type="number"
+        v-model.number="r.escala"
+        placeholder="escala"
+        step="any"
+      />
+      <select v-model="r.tipo">
+        <option value="int">int</option>
+        <option value="float">float</option>
+      </select>
+      <input
+        type="text"
+        v-model="r.unidad"
+        placeholder="unidad"
+      />
+      <button @click="eliminarRegistro(i)">🗑️</button>
     </div>
 
-    <div v-if="errores.length" class="errors">
-      <strong>Errores de validación:</strong>
-      <ul>
-        <li v-for="(e,i) in errores" :key="i">• {{ e }}</li>
-      </ul>
+    <!-- Botón publicar -->
+    <div class="actions">
+      <button
+        :disabled="sending"
+        @click="publicarConfig"
+      >
+        Publicar configuración
+      </button>
+    </div>
+
+    <!-- Errores de validación -->
+    <div
+      v-if="errores.length"
+      class="errors danger"
+    >
+      <div v-for="(e, idx) in errores" :key="idx">
+        {{ e }}
+      </div>
+    </div>
+
+    <!-- Mensaje resultado -->
+    <div
+      v-if="message"
+      :class="['msg', result === 'error' ? 'danger' : '']"
+    >
+      {{ message }}
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, watch } from 'vue'
 defineOptions({ name: 'ConfigMedidor' })
 
-
-// ENV: configurar en tu .env
-// VITE_GATEWAY_ID=RB751-CASA
-// VITE_FUNCTIONS_BASE_URL=https://analitica-energetica.netlify.app
+// Variables de entorno en .env
 const gatewayIdDefault = import.meta.env.VITE_GATEWAY_ID || ''
 const functionsBase = import.meta.env.VITE_FUNCTIONS_BASE_URL || ''
 
+// Estado reactivo
 const sending = ref(false)
-const result = ref('idle') // 'idle' | 'ok' | 'error'
+const result = ref('idle')
 const message = ref('')
 const errores = ref([])
 const retain = ref(true)
 const qos = ref(1)
-
+const tipoMedidor = ref('')
 const fileInput = ref(null)
 
 const config = ref({
@@ -128,6 +195,48 @@ const config = ref({
   registros: []
 })
 
+// Validación de IP
+function validarIP(ip) {
+  return /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/.test(ip)
+}
+
+// Validar toda la configuración
+function validarConfiguracion() {
+  const errs = []
+  if (!config.value.gateway_id) errs.push('Falta gateway_id')
+  if (!config.value.medidor_id) errs.push('Falta medidor_id')
+  if (!config.value.ip) errs.push('Falta IP del medidor')
+  if (config.value.ip && !validarIP(config.value.ip)) errs.push('IP del medidor inválida')
+  if (!Number.isInteger(config.value.direccion_modbus) || config.value.direccion_modbus < 1)
+    errs.push('Dirección Modbus inválida')
+  if (!Number.isInteger(config.value.intervalo_segundos) || config.value.intervalo_segundos < 1)
+    errs.push('Intervalo inválido')
+  if (!Number.isInteger(config.value.version) || config.value.version < 1)
+    errs.push('Versión inválida')
+
+  if (!Array.isArray(config.value.registros) || config.value.registros.length === 0) {
+    errs.push('Debe incluir al menos un registro')
+  } else {
+    const nombres = new Set()
+    config.value.registros.forEach((r, i) => {
+      if (!r.nombre) errs.push(`Registro ${i + 1}: falta nombre`)
+      if (r.nombre && nombres.has(r.nombre))
+        errs.push(`Registro ${i + 1}: nombre duplicado (${r.nombre})`)
+      if (r.nombre) nombres.add(r.nombre)
+      if (!Number.isInteger(r.offset) || r.offset < 0)
+        errs.push(`Registro ${i + 1}: offset inválido`)
+      if (!Number.isInteger(r.cantidad) || r.cantidad < 1)
+        errs.push(`Registro ${i + 1}: cantidad inválida`)
+      if (typeof r.escala !== 'number')
+        errs.push(`Registro ${i + 1}: escala inválida`)
+      if (!['int', 'float'].includes(r.tipo))
+        errs.push(`Registro ${i + 1}: tipo inválido`)
+    })
+  }
+  return errs
+}
+
+// CRUD de registros
 function agregarRegistro() {
   config.value.registros.push({
     nombre: '',
@@ -147,6 +256,7 @@ function limpiarRegistros() {
   config.value.registros = []
 }
 
+// Descargar configuración como JSON
 function descargarJSON() {
   const blob = new Blob([JSON.stringify(config.value, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -159,6 +269,7 @@ function descargarJSON() {
   URL.revokeObjectURL(url)
 }
 
+// Cargar configuración desde archivo
 function cargarDesdeArchivo(e) {
   const file = e.target.files?.[0]
   if (!file) return
@@ -181,7 +292,7 @@ function cargarDesdeArchivo(e) {
         result.value = 'idle'
         message.value = 'Configuración cargada desde archivo.'
       }
-    } catch (err) {
+    } catch {
       errores.value = ['Archivo JSON inválido']
     } finally {
       e.target.value = ''
@@ -190,39 +301,7 @@ function cargarDesdeArchivo(e) {
   reader.readAsText(file)
 }
 
-function validarIP(ip) {
-  return /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/.test(ip);
-}
-
-
-function validarConfiguracion() {
-  const errs = []
-  if (!config.value.gateway_id) errs.push('Falta gateway_id')
-  if (!config.value.medidor_id) errs.push('Falta medidor_id')
-  if (!config.value.ip) errs.push('Falta IP del medidor')
-  if (config.value.ip && !validarIP(config.value.ip)) errs.push('IP del medidor inválida')
-  if (!Number.isInteger(config.value.direccion_modbus) || config.value.direccion_modbus < 1) errs.push('Dirección Modbus inválida')
-  if (!Number.isInteger(config.value.intervalo_segundos) || config.value.intervalo_segundos < 1) errs.push('Intervalo inválido')
-  if (!Number.isInteger(config.value.version) || config.value.version < 1) errs.push('Versión inválida')
-
-  if (!Array.isArray(config.value.registros) || config.value.registros.length === 0) {
-    errs.push('Debe incluir al menos un registro')
-  } else {
-    const nombres = new Set()
-    config.value.registros.forEach((r, i) => {
-      if (!r.nombre) errs.push(`Registro ${i + 1}: falta nombre`)
-      if (r.nombre && nombres.has(r.nombre)) errs.push(`Registro ${i + 1}: nombre duplicado (${r.nombre})`)
-      if (r.nombre) nombres.add(r.nombre)
-      if (!Number.isInteger(r.offset) || r.offset < 0) errs.push(`Registro ${i + 1}: offset inválido`)
-      if (!Number.isInteger(r.cantidad) || r.cantidad < 1) errs.push(`Registro ${i + 1}: cantidad inválida`)
-      if (typeof r.escala !== 'number') errs.push(`Registro ${i + 1}: escala inválida`)
-      if (!['int', 'float'].includes(r.tipo)) errs.push(`Registro ${i + 1}: tipo inválido`)
-    })
-  }
-
-  return errs
-}
-
+// Publicar configuración a Netlify Function
 async function publicarConfig() {
   errores.value = validarConfiguracion()
   if (errores.value.length) {
@@ -261,7 +340,7 @@ async function publicarConfig() {
   }
 }
 
-// Plantillas
+// Plantillas de registros
 const plantillas = {
   EPM: [
     { nombre: 'tension_L1', offset: 0, cantidad: 2, escala: 0.1, tipo: 'float', unidad: 'V' },
@@ -272,7 +351,6 @@ const plantillas = {
     { nombre: 'voltaje_A', offset: 10, cantidad: 2, escala: 0.1, tipo: 'float', unidad: 'V' },
     { nombre: 'energia_activa', offset: 12, cantidad: 2, escala: 1, tipo: 'int', unidad: 'Wh' }
   ],
-  // Nombres base de tus 34 parámetros (offsets de ejemplo en 0, para que los edites)
   Estandar34: [
     { nombre: 'tension_L1', offset: 0, cantidad: 2, escala: 0.1, tipo: 'float', unidad: 'V' },
     { nombre: 'tension_L2', offset: 0, cantidad: 2, escala: 0.1, tipo: 'float', unidad: 'V' },
@@ -280,29 +358,24 @@ const plantillas = {
     { nombre: 'tension_L12', offset: 0, cantidad: 2, escala: 0.1, tipo: 'float', unidad: 'V' },
     { nombre: 'tension_L23', offset: 0, cantidad: 2, escala: 0.1, tipo: 'float', unidad: 'V' },
     { nombre: 'tension_L31', offset: 0, cantidad: 2, escala: 0.1, tipo: 'float', unidad: 'V' },
-
     { nombre: 'corriente_L1', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: 'A' },
     { nombre: 'corriente_L2', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: 'A' },
     { nombre: 'corriente_L3', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: 'A' },
     { nombre: 'corriente_N',  offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: 'A' },
-
     { nombre: 'potencia_activa_total',   offset: 0, cantidad: 2, escala: 1, tipo: 'float', unidad: 'W' },
     { nombre: 'potencia_reactiva_total', offset: 0, cantidad: 2, escala: 1, tipo: 'float', unidad: 'var' },
     { nombre: 'potencia_aparente_total', offset: 0, cantidad: 2, escala: 1, tipo: 'float', unidad: 'VA' },
     { nombre: 'potencia_activa_L1', offset: 0, cantidad: 2, escala: 1, tipo: 'float', unidad: 'W' },
     { nombre: 'potencia_activa_L2', offset: 0, cantidad: 2, escala: 1, tipo: 'float', unidad: 'W' },
     { nombre: 'potencia_activa_L3', offset: 0, cantidad: 2, escala: 1, tipo: 'float', unidad: 'W' },
-
     { nombre: 'thd_tension_L1', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: '%' },
     { nombre: 'thd_tension_L2', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: '%' },
     { nombre: 'thd_tension_L3', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: '%' },
     { nombre: 'thd_corriente_L1', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: '%' },
     { nombre: 'thd_corriente_L2', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: '%' },
     { nombre: 'thd_corriente_L3', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: '%' },
-
     { nombre: 'desbalance_tension',  offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: '%' },
     { nombre: 'desbalance_corriente', offset: 0, cantidad: 2, escala: 0.01, tipo: 'float', unidad: '%' },
-
     { nombre: 'fp_L1', offset: 0, cantidad: 2, escala: 0.001, tipo: 'float', unidad: '' },
     { nombre: 'fp_L2', offset: 0, cantidad: 2, escala: 0.001, tipo: 'float', unidad: '' },
     { nombre: 'fp_L3', offset: 0, cantidad: 2, escala: 0.001, tipo: 'float', unidad: '' },
@@ -310,8 +383,7 @@ const plantillas = {
   ]
 }
 
-const tipoMedidor = ref('')
-
+// Aplicar plantilla seleccionada
 function aplicarPlantilla() {
   if (!tipoMedidor.value) return
   const arr = plantillas[tipoMedidor.value]
@@ -320,16 +392,18 @@ function aplicarPlantilla() {
   message.value = `Plantilla "${tipoMedidor.value}" aplicada.`
 }
 
+// Reset mensaje al cambiar gateway_id
 watch(() => config.value.gateway_id, () => {
   result.value = 'idle'
   message.value = ''
 })
-fetch("${import.meta.env.BASE_URL}/status-RB751-CASA.json")
+
+// Fetch opcional de status
+fetch(`${import.meta.env.BASE_URL}/status-${gatewayIdDefault || 'RB751-CASA'}.json`)
   .then(res => res.json())
   .then(data => {
-    console.log("Último heartbeat:", data.timestamp);
-  });
-
+    console.log('Último heartbeat:', data.timestamp)
+  })
 </script>
 
 <style scoped>
@@ -348,3 +422,4 @@ fetch("${import.meta.env.BASE_URL}/status-RB751-CASA.json")
   .registro { grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto; }
 }
 </style>
+```

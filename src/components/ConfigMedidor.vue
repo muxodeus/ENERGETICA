@@ -104,7 +104,7 @@ defineOptions({ name: 'ConfigMedidor' })
 
 // ENV: configurar en tu .env
 // VITE_GATEWAY_ID=RB751-CASA
-// VITE_FUNCTIONS_BASE_URL=https://tu-sitio.netlify.app
+// VITE_FUNCTIONS_BASE_URL=https://analitica-energetica.netlify.app
 const gatewayIdDefault = import.meta.env.VITE_GATEWAY_ID || ''
 const functionsBase = import.meta.env.VITE_FUNCTIONS_BASE_URL || ''
 

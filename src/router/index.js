@@ -18,8 +18,6 @@ import NewMapView from '@/components/Map/NewMapView.vue'
 import MedidorBombaAgua from '@/components/MedidorBombaAgua.vue'
 import ConfigMedidor from '@/components/ConfigMedidor.vue'
 
-
-
 const routes = [
   { path: '/', redirect: '/inicio' },
   { path: '/inicio', name: 'inicio', component: Inicio },
@@ -35,31 +33,18 @@ const routes = [
   { path: '/historicos/patrones', name: 'patrones', component: Patrones, meta: { requiresAuth: true } },
   { path: '/fleet', name: 'fleet', component: Fleet, meta: { requiresAuth: true } },
   { path: '/meter/:id', name: 'MeterDetail', component: MeterDetail, props: true, meta: { requiresAuth: true } },
-  //{ path: '/map', name: 'map', component: () => import('@/components/MapaLeaflet.vue'), meta: { requiresAuth: true } },
   { path: '/medidor/:id', name: 'MeterDetailDynamic', component: () => import('@/views/MeterDetail.vue'), meta: { requiresAuth: true } },
   { path: '/403', name: 'AccessDenied', component: () => import('@/views/AccessDenied.vue') },
-    {
-    path: '/map',
-    name: 'NewMapView',
-    component: NewMapView
-  },
-    {
-    path: '/bomba-agua',
-    name: 'MedidorBombaAgua',
-    component: MedidorBombaAgua
-  },
-  { path: '/unifilar/:id', name: 'Unifilar', component: Unifilar }
- 
+  { path: '/map', name: 'NewMapView', component: NewMapView },
+  { path: '/bomba-agua', name: 'MedidorBombaAgua', component: MedidorBombaAgua },
+  { path: '/unifilar/:id', name: 'Unifilar', component: Unifilar },
+  { path: '/config', name: 'config-medidor', component: ConfigMedidor }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    { path: '/', name: 'inicio', component: Inicio },
-    { path: '/config', name: 'config-medidor', component: ConfigMedidor }
-  ]
+  routes
 })
-
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
@@ -72,7 +57,5 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-export default createRouter({
-  history: createWebHistory(),
-  routes
-})
+export default router
+
